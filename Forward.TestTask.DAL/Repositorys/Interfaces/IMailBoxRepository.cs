@@ -2,7 +2,7 @@
 
 namespace Forward.TestTask.DAL.Repositorys.Interfaces;
 
-public interface IMailBoxRepository : IBaseRepository<MailBox>
+public interface IMailBoxRepository : IBaseRepository<MailBoxSettings>
 {
 	
 }

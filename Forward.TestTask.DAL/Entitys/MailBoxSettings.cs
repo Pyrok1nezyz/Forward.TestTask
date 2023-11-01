@@ -2,12 +2,15 @@
 
 namespace Forward.TestTask.DAL.Entitys;
 [Table("email")]
-public class MailBox
+public class MailBoxSettings
 {
 	public uint Id { get; init; }
 	public string Login { get; set; }
 	public string? Password { get; set; }
-	public string Host { get; set; }
+	public string Adress { get; set; }
+	public int? SslProtocol { get; set; }
+	public int Port { get; set; }
+	public bool CertCheck {get; set; }
 }
 
 /*

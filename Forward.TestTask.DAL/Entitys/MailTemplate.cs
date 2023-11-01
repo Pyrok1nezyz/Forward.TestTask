@@ -1,16 +1,19 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace Forward.TestTask.DAL.Entitys;
 
 public class MailTemplate
 {
+	[Key]
 	public uint Id { get; init; }
-	
-	public Mail Mail { get; set; }
-	public Regex Regex { get; set; }
+	[ForeignKey("EmailId")]
+	public Mail? Mail { get; set; }
+	public Regex? Regex { get; set; }
 	public bool IsDelete { get; set; }
-	public XmlDocument XmlDocument { get; set; }
+	public XmlDocument? XmlDocument { get; set; }
 }
 
 /*

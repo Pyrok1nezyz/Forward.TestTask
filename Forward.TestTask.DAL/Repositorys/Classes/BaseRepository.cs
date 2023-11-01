@@ -5,13 +5,18 @@ using Dapper;
 using Forward.TestTask.DAL.Repositorys.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Text;
+using System.Linq.Expressions;
 
 namespace Forward.TestTask.DAL.Repositorys.Classes;
 
-public abstract class BaseRepository<T> : IDisposable, IAsyncDisposable, IBaseRepository<T> where T : class
+public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
 {
-	public IQueryable<T> Table { get; }
 	SqlConnection _connection;
+
+	public BaseRepository(SqlConnection connection)
+	{
+		_connection = connection;
+	}
 	public async Task<IEnumerable<T>> GetAll()
 	{
 		IEnumerable<T> result = null;
@@ -93,6 +98,24 @@ public abstract class BaseRepository<T> : IDisposable, IAsyncDisposable, IBaseRe
 		catch (Exception ex) { }
 
 		return rowsEffected > 0 ? true : false;
+	}
+
+	public async Task<bool> GetByCondition(Expression<Func<T, bool>> expression)
+	{
+		try
+		{
+			string tableName = GetTableName();
+			var columns = GetColumns(excludeKey: false);
+			string columnsString = string.Join(", ", columns);
+			string sql = $"SELECT ({columnsString}) FROM {tableName} WHERE {expression.Body}";
+			var results = await _connection.QueryAsync(sql);
+
+			return results.Count() > 0;
+		}
+		catch (Exception ex)
+		{
+			return false;
+		}
 	}
 
 	private string GetTableName()
@@ -182,15 +205,5 @@ public abstract class BaseRepository<T> : IDisposable, IAsyncDisposable, IBaseRe
 		}
 
 		return null;
-	}
-
-	public void Dispose()
-	{
-		_connection.Dispose();
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		await _connection.DisposeAsync();
 	}
 }

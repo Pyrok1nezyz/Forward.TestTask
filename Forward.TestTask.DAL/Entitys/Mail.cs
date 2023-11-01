@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Forward.TestTask.DAL.Entitys;
-[Table("email")]
+[Table("email_Message")]
 public class Mail
 {
     public int Id { get; init; }

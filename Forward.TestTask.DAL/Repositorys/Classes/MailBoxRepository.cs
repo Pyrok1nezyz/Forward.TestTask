@@ -4,10 +4,9 @@ using Microsoft.Data.SqlClient;
 
 namespace Forward.TestTask.DAL.Repositorys.Classes;
 
-public class MailRepository : BaseRepository<Mail>
+public class MailBoxRepository : BaseRepository<MailBoxSettings>, IMailBoxRepository
 {
-	public MailRepository(SqlConnection connection) : base(connection)
+	public MailBoxRepository(SqlConnection connection) : base(connection)
 	{
-		
 	}
 }
