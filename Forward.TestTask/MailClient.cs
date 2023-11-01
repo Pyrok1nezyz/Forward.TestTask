@@ -34,7 +34,7 @@ public class MailClient
 
 		if (isOnlyReciveMessage)
 		{
-			_onlyRecieveMail = settings;
+			_onlyRecieveMail = config.ToString();
 		}
 
 		_mailData = settings;

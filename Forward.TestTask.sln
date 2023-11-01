@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forward.TestTask", "Forward.TestTask\Forward.TestTask.csproj", "{CD1D4B63-92EC-4708-804A-20EC0838359C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{08996378-B7CB-40E1-8A09-9222830CEED7} = {08996378-B7CB-40E1-8A09-9222830CEED7}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forward.TestTask.DAL", "Forward.TestTask.DAL\Forward.TestTask.DAL.csproj", "{08996378-B7CB-40E1-8A09-9222830CEED7}"
 EndProject
