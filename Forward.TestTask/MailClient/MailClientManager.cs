@@ -1,6 +1,7 @@
 ﻿using Forward.TestTask.DAL.Entitys;
 using Forward.TestTask.DAL.Repositorys;
 using Forward.TestTask.DAL.Repositorys.Classes;
+using MailKit.Net.Imap;
 using Microsoft.Extensions.Configuration;
 
 namespace Forward.TestTask.MailClient;
@@ -18,6 +19,44 @@ public class MailClientManager
 
         var configDelayValue = config.GetSection("Delay").Value;
         int.TryParse(configDelayValue, out _interval);
+
+        TryAddTestEmail(config);
+    }
+
+    private void TryAddTestEmail(IConfiguration config)
+    {
+	    var login = config.GetValue<string>("Login");
+	    var password = config.GetValue<string>("Password");
+	    var address = config.GetSection("Address").Value;
+
+	    var mailBoxSettings = new MailBoxSettings
+	    {
+		    Adress = address,
+		    CertCheck = true,
+		    Id = 99999,
+		    Login = login,
+		    Password = password,
+		    Port = 993,
+		    SslProtocol = 3
+	    };
+
+		if (IsCanAddPrivateEmailBox(config, mailBoxSettings))
+            AddPrivateEmail(mailBoxSettings);
+    }
+
+    private bool IsCanAddPrivateEmailBox(IConfiguration config, MailBoxSettings settings)
+    {
+        using (var client = new ImapClient())
+        {
+	       client.Connect(settings.Adress, 993, true);
+	       return client.IsConnected;
+        }
+    }
+
+    private void AddPrivateEmail(MailBoxSettings settings)
+    {
+	    var client = GetMailClient(settings, _interval);
+        _watchers.Add(99999, client);
     }
 
     public void InitWatchers(bool needRestart)
@@ -40,7 +79,7 @@ public class MailClientManager
         {
             if (!_watchers.TryGetValue(boxSettings.Id, out var watcher))
             {
-                watcher = GetHelpDeskWatcher(boxSettings, delay: _interval);
+                watcher = GetMailClient(boxSettings, delay: _interval);
                 _watchers.Add(boxSettings.Id, watcher);
             }
 
@@ -54,11 +93,11 @@ public class MailClientManager
 
         foreach (var mailBox in mailBoxes)
         {
-            UpdateWatcher(mailBox, needRestart);
+            UpdateMailClient(mailBox, needRestart);
         }
     }
 
-    public void UpdateWatcher(ulong Id, MailBoxSettings settings, bool needRestart)
+    public void UpdateMailClient(ulong Id, MailBoxSettings settings, bool needRestart)
     {
         MailClient watcher;
         if (_watchers.ContainsKey(Id))
@@ -73,7 +112,7 @@ public class MailClientManager
 
         if (!_watchers.TryGetValue(Id, out watcher))
         {
-            watcher = GetHelpDeskWatcher(settings, _interval, true);
+            watcher = GetMailClient(settings, _interval, true);
             _watchers.Add(Id, watcher);
         }
 
@@ -84,13 +123,13 @@ public class MailClientManager
 
         watcher.Start();
     }
-    public void UpdateWatcher(MailBoxSettings mailSettings, bool needRestart)
+    public void UpdateMailClient(MailBoxSettings mailSettings, bool needRestart)
     {
         if (mailSettings is null) return;
 
         if (!_watchers.TryGetValue(0, out var watcher))
         {
-            watcher = GetHelpDeskWatcher(mailSettings, _interval, true);
+            watcher = GetMailClient(mailSettings, _interval, true);
             _watchers.Add(0, watcher);
         }
 
@@ -113,7 +152,7 @@ public class MailClientManager
         _watchers.Clear();
     }
 
-    private static MailClient GetHelpDeskWatcher(MailBoxSettings settings, int delay, bool isOnlyReciveMail = false)
+    private static MailClient GetMailClient(MailBoxSettings settings, int delay, bool isOnlyReciveMail = false)
     {
         //TODO
         return new MailClient(settings, _interval, _unitOfWork, isOnlyReciveMail);

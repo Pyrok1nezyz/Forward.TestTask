@@ -99,7 +99,7 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
 
 		return rowsEffected > 0 ? true : false;
 	}
-
+	//TODO
 	public async Task<bool> GetByCondition(Expression<Func<T, bool>> expression)
 	{
 		try
