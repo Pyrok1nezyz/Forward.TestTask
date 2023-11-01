@@ -224,7 +224,8 @@ public class MailClient
 
 	private void ParseMessage(IMessageSummary summary)
 	{
-		//TODO
+		//TODO MailMessageParser();
+       
 	}
 
     private async Task WaitForMessagesAsync()
@@ -233,7 +234,7 @@ public class MailClient
         {
             try
             {
-                using (_done = new CancellationTokenSource(new TimeSpan(0, 9, 0)))
+                using (_done = new CancellationTokenSource(new TimeSpan(0, _interval, 0)))
                 {
                     await _client.IdleAsync(_done.Token, _cancel.Token);
                 }

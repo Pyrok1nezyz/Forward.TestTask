@@ -9,8 +9,8 @@ public class MailClientManager
 {
     private Dictionary<ulong, MailClient> _watchers;
     private MailClient _client;
-    private UnitOfWork _unitOfWork;
-    private int _interval;
+    private static UnitOfWork _unitOfWork;
+    private static int _interval;
 
     public MailClientManager(IConfiguration config)
     {
@@ -116,6 +116,6 @@ public class MailClientManager
     private static MailClient GetHelpDeskWatcher(MailBoxSettings settings, int delay, bool isOnlyReciveMail = false)
     {
         //TODO
-        return new MailClient(settings, delay, _interval, isOnlyReciveMail);
+        return new MailClient(settings, _interval, _unitOfWork, isOnlyReciveMail);
     }
 }

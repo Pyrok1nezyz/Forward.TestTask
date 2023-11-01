@@ -14,7 +14,7 @@ public class MailMessageParser
 		_message = message;
 	}
 
-	private Mail ParseMessage(IMessageSummary summary)
+	public Mail ParseMessage(IMessageSummary summary)
 	{
 		return new Mail()
 		{
@@ -27,19 +27,19 @@ public class MailMessageParser
 		};
 	}
 
-	public int GetMessageId()
+	private int GetMessageId()
 	{
 		return _message.Index;
 	}
 
-	public string GetBodyPart()
+	private string GetBodyPart()
 	{
 		var bodyPart = _message.BodyParts.OfType<TextPart>().FirstOrDefault();
 		if (bodyPart is not null) return bodyPart.Text;
 		return string.Empty;
 	}
 
-	public string GetHeadersPart()
+	private string GetHeadersPart()
 	{
 		var headers = new StringBuilder();
 		foreach (var head in _message.Headers)
@@ -49,14 +49,14 @@ public class MailMessageParser
 		return headers.ToString();
 	}
 
-	public string GetSenderPart()
+	private string GetSenderPart()
 	{
 		var senderPart = _message.Envelope.From.FirstOrDefault();
 		if (senderPart is not null) return senderPart.ToString();
 		return string.Empty;
 	}
 
-	public string GetRecipients()
+	private string GetRecipients()
 	{
 		var recepeintsPart = new StringBuilder();
 		foreach (var recepeint in _message.Envelope.To)
