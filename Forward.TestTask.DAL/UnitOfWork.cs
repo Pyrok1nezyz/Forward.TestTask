@@ -1,8 +1,8 @@
 ﻿using System.Data;
+using Forward.TestTask.DAL.Repositories;
 using Forward.TestTask.DAL.Repositorys;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Protocols;
 
 namespace Forward.TestTask.DAL;
 
@@ -11,7 +11,7 @@ public class UnitOfWork : IDisposable
     private MailRepository? _mailRepository;
     private MailBoxRepository? _mailBoxRepository;
     private MailTemplateRepository? _mailTemplateRepository;
-    private IDbConnection _connection;
+    private readonly IDbConnection _connection;
     public UnitOfWork(IConfiguration config)
     {
 	    _connection = GetDbConnection(config);

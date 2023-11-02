@@ -39,11 +39,11 @@ public class MailClientManager
 		    Port = 993,
 	    };
 
-		if (IsCanAddPrivateEmailBox(config, mailBoxSettings))
+		if (IsCanAddPrivateEmailBox(mailBoxSettings))
             AddPrivateEmail(mailBoxSettings);
     }
 
-    private bool IsCanAddPrivateEmailBox(IConfiguration config, MailBoxSettings settings)
+    private bool IsCanAddPrivateEmailBox(MailBoxSettings settings)
     {
         using (var client = new ImapClient())
         {
@@ -97,12 +97,12 @@ public class MailClientManager
 	        }
     }
 
-    public void UpdateMailClient(ulong Id, MailBoxSettings settings, bool needRestart)
+    public void UpdateMailClient(ulong id, MailBoxSettings settings, bool needRestart)
     {
         MailClient? watcher;
-        if (_watchers.ContainsKey(Id))
+        if (_watchers.ContainsKey(id))
         {
-            if (_watchers.TryGetValue(Id, out watcher))
+            if (_watchers.TryGetValue(id, out watcher))
             {
                 watcher.Stop();
             }
@@ -110,10 +110,10 @@ public class MailClientManager
             return;
         }
 
-        if (!_watchers.TryGetValue(Id, out watcher))
+        if (!_watchers.TryGetValue(id, out watcher))
         {
             watcher = GetMailClient(settings, true);
-            _watchers.Add(Id, watcher);
+            _watchers.Add(id, watcher);
         }
 
         if (needRestart)
@@ -158,6 +158,6 @@ public class MailClientManager
 		    .MailTemplateRepository
 		    .GetByMailBoxId(settings.Id)
 		    .Result;
-        return new MailClient(settings, template, _unitOfWork, _interval, isOnlyReciveMail);
+        return new MailClient(settings, template, _unitOfWork, _interval);
     }
 }

@@ -34,6 +34,8 @@ public class MailTemplateParser
 		var mail = parser.ParseMessage();
 		var query = GetSqlScriptFromXmlDocument();
 
+		AddMessageToDb(mail);
+
 		return await _unitOfWork.MailRepository.Execute(query, mail);
 	}
 

@@ -17,8 +17,6 @@ public class MailRepository : BaseRepository<Mail>
 	{
 		int rowsEffected = 0;
 
-		var query = sql;
-
 		var dynamicParameters = new DynamicParameters();
 		dynamicParameters.Add("@Email_Title", mail.Title);
 		dynamicParameters.Add("@EMail_Body", mail.Body);

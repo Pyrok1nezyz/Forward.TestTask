@@ -10,9 +10,7 @@ namespace Forward.TestTask.MailClient;
 
 public class MailClient
 {
-    private readonly string? _onlyRecieveMail;
-    //private readonly ulong _controllerID;
-    private readonly ulong _id;
+	//private readonly ulong _controllerID;
     private readonly string _host;
     private readonly int _port;
     private readonly string _login;
@@ -29,29 +27,24 @@ public class MailClient
     private CancellationTokenSource _done;
     //private readonly string _mailData;
 
-    public MailClient(MailBoxSettings settings, MailTemplate mailTemplate, UnitOfWork unitOfWork, int minDelay, bool isOnlyReciveMessage)
+    public MailClient(MailBoxSettings settings, MailTemplate mailTemplate, UnitOfWork unitOfWork, int minDelay)
     {
-	    _id = settings.Id;
         _unitOfWork = unitOfWork;
         _interval = minDelay;
         _template = mailTemplate;
-
-        if (isOnlyReciveMessage)
-        {
-            _onlyRecieveMail = settings.ToString();
-        }
 
         _host = settings.Adress;
         _port = settings.Port;
         _login = settings.Login;
         _pass = settings.Password;
-        var CertCheck = settings.CertCheck ??= false;
+        var certCheck = settings.CertCheck ??= false;
 
         _cancel = new CancellationTokenSource();
         _done = new CancellationTokenSource();
         _client = new ImapClient
         {
-            CheckCertificateRevocation = CertCheck
+
+            CheckCertificateRevocation = certCheck
         };
         _messages = new Dictionary<UniqueId, IMessageSummary>();
     }
@@ -127,7 +120,7 @@ public class MailClient
         if (folder.Count > _messages.Count)
         {
             _messagesArrived = true;
-            _done?.Cancel();
+            _done.Cancel();
         }
     }
 
@@ -191,8 +184,17 @@ public class MailClient
 
 			var message = await ParseMessage(messageSummary);
 
-			parser.TryAddMessageToDb(message);
+			await parser.TryAddMessageToDb(message);
+
+			DeleteMessageFromMailBox(messageSummary);
+
+            if(_template.IsDelete) DeleteMessageFromMailBox(messageSummary);
 		}
+	}
+
+    private void DeleteMessageFromMailBox(IMessageSummary summary)
+    {
+		_client.Inbox.AddFlags(summary.UniqueId, MessageFlags.Deleted, false);
 	}
 
     private async Task<MimeMessage> ParseMessage(IMessageSummary summary)
@@ -243,10 +245,10 @@ public class MailClient
 
     public void Dispose()
     {
-        _cancel?.Dispose();
+        _cancel.Dispose();
 
-        _client?.Dispose();
+        _client.Dispose();
 
-        _done?.Dispose();
+        _done.Dispose();
     }
 }
