@@ -65,8 +65,6 @@ public class MailClientManager
 
     public void UpdateWatchers(bool needRestart, IEnumerable<MailBoxSettings>? mailBoxes = null)
     {
-        //var mainContext = Global.Container.GetInstance<MainContext>();
-
         var listMailBoxes = _unitOfWork.MailBoxRepository.GetAll().Result;
 
         if (_watchers == null)

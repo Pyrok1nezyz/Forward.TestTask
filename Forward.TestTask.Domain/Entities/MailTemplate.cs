@@ -14,15 +14,3 @@ public class MailTemplate : BaseEntity
 	public bool IsDelete { get; set; }
 	public string XmlDocument { get; set; }
 }
-
-/*
-   - Id bigint IDENTITY PK
-   - EMailId bigint FK (табл.EMail)
-   - Regexp varchar(150)
-   - IsDelete bit (настройка, определяющая необходимость удаления почтовых сообщений после выполнения sql-скрипта)
-   - XmlInfo xml, структура xml:
-   <root>
-   <sql><![CDATA[
-   Содержимое sql-скрипта
-   ]]></sql>
-   </root> */

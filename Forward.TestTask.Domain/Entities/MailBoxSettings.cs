@@ -10,24 +10,3 @@ public class MailBoxSettings : BaseEntity
 	public int Port { get; set; }
 	public bool? CertCheck {get; set; }
 }
-
-/*
- - Id bigint IDENTITY PK
-		- EMailId bigint FK (табл.EMail)
-		- Regexp varchar(150)
-		- IsDelete bit (настройка, определяющая необходимость удаления почтовых сообщений после выполнения sql-скрипта)
-		- XmlInfo xml, структура xml:
-<root>
-	<sql><![CDATA[
-Содержимое sql-скрипта
-	]]></sql>
-</root>
-
-
-
-
- 5. Таблицы:
-   - email (Проверяемые почтовые ящики), поля:
-   - Id bigint IDENTITY PK
-   - ... Остальные поля - по смыслу;
-*/
