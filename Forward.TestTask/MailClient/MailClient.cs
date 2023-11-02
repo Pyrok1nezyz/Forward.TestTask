@@ -1,88 +1,57 @@
 ﻿using MailKit.Net.Imap;
 using MailKit.Security;
 using MailKit;
-using System.Security.Authentication;
-using System.Text;
-using Forward.TestTask.DAL.Entitys;
-using Forward.TestTask.DAL.Repositorys;
-using Forward.TestTask.DAL.Repositorys.Classes;
-using Microsoft.Extensions.Configuration;
+using Forward.TestTask.DAL;
+using Forward.TestTask.Domain.Entitys;
+using Forward.TestTask.Parsers;
 using MimeKit;
 
 namespace Forward.TestTask.MailClient;
 
 public class MailClient
 {
-    private readonly string _onlyRecieveMail;
+    private readonly string? _onlyRecieveMail;
     //private readonly ulong _controllerID;
-
+    private readonly ulong _id;
     private readonly string _host;
     private readonly int _port;
     private readonly string _login;
-    private readonly string _pass;
+    private readonly string? _pass;
     private readonly int _interval;
+    private readonly MailTemplate _template;
 
     private readonly Dictionary<UniqueId, IMessageSummary> _messages;
 
     private readonly CancellationTokenSource _cancel;
     private readonly ImapClient _client;
-    private CancellationTokenSource _done;
     private bool _messagesArrived;
-    private UnitOfWork _unitOfWork;
+    private readonly UnitOfWork _unitOfWork;
+    private CancellationTokenSource _done;
     //private readonly string _mailData;
 
-
-    public MailClient(MailBoxSettings settings, int minDelay, UnitOfWork unitOfWork, bool isOnlyReciveMessage)
+    public MailClient(MailBoxSettings settings, MailTemplate mailTemplate, UnitOfWork unitOfWork, int minDelay, bool isOnlyReciveMessage)
     {
+	    _id = settings.Id;
         _unitOfWork = unitOfWork;
         _interval = minDelay;
+        _template = mailTemplate;
 
         if (isOnlyReciveMessage)
         {
             _onlyRecieveMail = settings.ToString();
         }
 
-        //_mailData = settings;
-
-        var sslType = settings.SslProtocol;
         _host = settings.Adress;
-
         _port = settings.Port;
-
         _login = settings.Login;
         _pass = settings.Password;
-
-        var noCertCheck = settings.CertCheck;
-
-        SslProtocols sslProtocols;
-        switch (sslType)
-        {
-            case 2:
-                {
-                    sslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-
-                    break;
-                }
-            case 3:
-                {
-                    sslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Tls;
-
-                    break;
-
-                }
-            default:
-                {
-                    sslProtocols = SslProtocols.None;
-
-                    break;
-                }
-        }
+        var CertCheck = settings.CertCheck ??= false;
 
         _cancel = new CancellationTokenSource();
+        _done = new CancellationTokenSource();
         _client = new ImapClient
         {
-            SslProtocols = sslProtocols,
-            CheckCertificateRevocation = noCertCheck
+            CheckCertificateRevocation = CertCheck
         };
         _messages = new Dictionary<UniqueId, IMessageSummary>();
     }
@@ -138,7 +107,7 @@ public class MailClient
         await _client.DisconnectAsync(true);
     }
 
-    private void Inbox_MessageExpunged(object sender, MessageEventArgs e)
+    private void Inbox_MessageExpunged(object? sender, MessageEventArgs e)
     {
         if (e.Index < _messages.Count)
         {
@@ -149,9 +118,11 @@ public class MailClient
         }
     }
 
-    private void Inbox_CountChanged(object sender, EventArgs e)
+    private void Inbox_CountChanged(object? sender, EventArgs e)
     {
-        var folder = (ImapFolder)sender;
+	    if (sender == null) throw new ArgumentNullException(nameof(sender));
+
+	    var folder = (ImapFolder)sender;
 
         if (folder.Count > _messages.Count)
         {
@@ -191,6 +162,7 @@ public class MailClient
     private async Task FetchMessagesAsync()
     {
         IList<IMessageSummary> fetched;
+        var parser = new MailTemplateParser(_template, _unitOfWork);
         do
         {
             try
@@ -217,15 +189,17 @@ public class MailClient
 		{
 			_messages.Add(messageSummary.UniqueId, messageSummary);
 
-			ParseMessage(messageSummary);
-		}
+			var message = await ParseMessage(messageSummary);
 
+			parser.TryAddMessageToDb(message);
+		}
 	}
 
-	private void ParseMessage(IMessageSummary summary)
+    private async Task<MimeMessage> ParseMessage(IMessageSummary summary)
 	{
 		//TODO MailMessageParser();
-       
+        var message = await _client.Inbox.GetMessageAsync(summary.UniqueId);
+        return message;
 	}
 
     private async Task WaitForMessagesAsync()
@@ -234,10 +208,7 @@ public class MailClient
         {
             try
             {
-                using (_done = new CancellationTokenSource(new TimeSpan(0, _interval, 0)))
-                {
-                    await _client.IdleAsync(_done.Token, _cancel.Token);
-                }
+	            await Task.Delay(_interval * 60 * 1000);
 
                 break;
             }

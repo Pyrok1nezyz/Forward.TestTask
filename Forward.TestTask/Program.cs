@@ -1,6 +1,4 @@
-﻿using Forward.TestTask.DAL;
-using Forward.TestTask.MailClient;
-using Microsoft.Data.SqlClient;
+﻿using Forward.TestTask.MailClient;
 using Microsoft.Extensions.Configuration;
 
 namespace Forward.TestTask
@@ -9,9 +7,14 @@ namespace Forward.TestTask
 	{
 		static void Main(string[] args)
 		{
-			IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").AddEnvironmentVariables().Build();
-			var mailManager = new MailClientManager(configuration);
+			var dir = Directory.GetCurrentDirectory();
+			IConfiguration configuration = new ConfigurationBuilder()
+				.SetBasePath(dir)
+				.AddJsonFile("appsettings.json")
+				.AddEnvironmentVariables().Build();
 
+			var mailManager = new MailClientManager(configuration, true);
+			mailManager.InitWatchers(false);
 		}
 	}
 }

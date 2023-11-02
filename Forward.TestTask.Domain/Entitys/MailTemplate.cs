@@ -3,17 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace Forward.TestTask.DAL.Entitys;
+namespace Forward.TestTask.Domain.Entitys;
 
-public class MailTemplate
+public class MailTemplate : BaseEntity
 {
-	[Key]
-	public uint Id { get; init; }
+	public ulong EmailId { get; set; }
 	[ForeignKey("EmailId")]
-	public Mail? Mail { get; set; }
-	public Regex? Regex { get; set; }
+	public MailBoxSettings? MailBoxSettings { get; set; }
+	public string Regex { get; set; }
 	public bool IsDelete { get; set; }
-	public XmlDocument? XmlDocument { get; set; }
+	public string XmlDocument { get; set; }
 }
 
 /*
