@@ -10,6 +10,7 @@ public class MailTemplateParser
 {
 	private readonly string _regex;
 	private readonly bool _delete;
+	private readonly string _document;
 	private readonly UnitOfWork _unitOfWork;
 
 	public MailTemplateParser(MailTemplate template, UnitOfWork unitOfWork)
@@ -17,9 +18,10 @@ public class MailTemplateParser
 		_regex = template.Regex;
 		_delete = template.IsDelete;
 		_unitOfWork = unitOfWork;
+		_document = template.XmlDocument;
 	}
 
-	public bool TryAddMessageToDb(MimeMessage message)
+	public async Task<bool> TryAddMessageToDb(MimeMessage message)
 	{
 		var sender = message.Sender.Name;
 
@@ -30,8 +32,9 @@ public class MailTemplateParser
 
 		var parser = new MailMessageParser(message);
 		var mail = parser.ParseMessage();
+		var query = GetSqlScriptFromXmlDocument();
 
-		return AddMessageToDb(mail);
+		return await _unitOfWork.MailRepository.Execute(query, mail);
 	}
 
 	private bool AddMessageToDb(Mail entity)
@@ -44,12 +47,14 @@ public class MailTemplateParser
 		return Regex.IsMatch(_regex, target);
 	}
 
-	private string? GetSqlScriptFromXmlDocument(string document)
+	private string GetSqlScriptFromXmlDocument()
 	{
 		XmlDocument xmlDoc = new XmlDocument();
-		xmlDoc.LoadXml(document);
+		xmlDoc.LoadXml(_document);
 
 		var value = xmlDoc["root"]?["sql"]?.InnerText.Trim();
+
+		if (string.IsNullOrWhiteSpace(value)) value = "Error";
 		return value;
 	}
 

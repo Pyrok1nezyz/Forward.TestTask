@@ -33,7 +33,7 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
         return result;
     }
 
-    public async Task<bool> Add(T entity)
+    public virtual async Task<bool> Add(T entity)
     {
         int rowsEffected = 0;
         try
